@@ -2,18 +2,11 @@ package com.smackwerks.kotlinchannels.data
 
 import awaitObjectResult
 import com.github.kittinunf.fuel.Fuel
-import com.github.kittinunf.fuel.core.ResponseDeserializable
-import com.github.kittinunf.fuel.moshi.moshiDeserializerOf
 import com.github.kittinunf.result.Result
-import com.squareup.moshi.KotlinJsonAdapterFactory
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.Types
 import kotlinx.coroutines.experimental.channels.ArrayChannel
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.launch
 import timber.log.Timber
-import com.squareup.moshi.Types.newParameterizedType
-
 
 
 class RepoModel {
@@ -21,6 +14,7 @@ class RepoModel {
         val repos = ArrayChannel<Repository>(lookAhead)
 
         launch {
+            val deserializer = moshiArrayDeserializerOf<Repository>()
             var result = Fuel.get(URL).awaitObjectResult(deserializer)
 
             while (!repos.isClosedForSend) {
@@ -48,14 +42,6 @@ class RepoModel {
     companion object {
         private const val URL = "https://api.github.com/repositories"
         private const val LOOKAHEAD = 50
-        private val deserializer =  object : ResponseDeserializable<List<Repository>> {
-            override fun deserialize(content: String): List<Repository>? =
-                Moshi.Builder()
-                    .add(KotlinJsonAdapterFactory())
-                    .build()
-                    .adapter<List<Repository>>(Types.newParameterizedType(List::class.java, Repository::class.java))
-                    .fromJson(content)
-        }
     }
 }
 
