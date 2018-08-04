@@ -1,6 +1,6 @@
 package com.smackwerks.kotlinchannels
 
-import com.smackwerks.kotlinchannels.data.RepoModel
+import com.smackwerks.kotlinchannels.data.RepoModel.getRepos
 import junit.framework.Assert.assertNotNull
 import junit.framework.Assert.assertNull
 import kotlinx.coroutines.experimental.delay
@@ -10,10 +10,9 @@ import org.junit.Test
 class RepoModelTest {
     @Test
     fun testLookaheadAndClosing() {
-        val model = RepoModel()
         runBlocking {
             val buffer = 10  // This should stay less than the # of repos Github returns
-            val chan = model.getRepos(lookAhead = buffer)
+            val chan = getRepos(lookAhead = buffer)
             val first = chan.receiveOrNull()
             assertNotNull(first)
 
@@ -30,9 +29,9 @@ class RepoModelTest {
 
     @Test
     fun testKotlinMatches() {
-        val model = RepoModel()
+
         runBlocking {
-            
+
         }
     }
 }

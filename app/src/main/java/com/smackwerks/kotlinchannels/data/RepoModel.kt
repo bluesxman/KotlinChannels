@@ -8,7 +8,10 @@ import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.launch
 import timber.log.Timber
 
-class RepoModel {
+object RepoModel {
+    private const val URL = "https://api.github.com/repositories"
+    private const val LOOKAHEAD = 50
+
     fun getRepos(namePattern: Regex? = null, lookAhead: Int = LOOKAHEAD): Channel<Repository> {
         val repos = ArrayChannel<Repository>(lookAhead)
 
@@ -35,11 +38,6 @@ class RepoModel {
         }
 
         return repos
-    }
-
-    companion object {
-        private const val URL = "https://api.github.com/repositories"
-        private const val LOOKAHEAD = 50
     }
 }
 
