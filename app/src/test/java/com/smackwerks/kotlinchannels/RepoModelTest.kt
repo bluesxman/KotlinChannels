@@ -2,20 +2,37 @@ package com.smackwerks.kotlinchannels
 
 import com.smackwerks.kotlinchannels.data.RepoModel
 import junit.framework.Assert.assertNotNull
+import junit.framework.Assert.assertNull
+import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.runBlocking
 import org.junit.Test
-import timber.log.Timber
 
 class RepoModelTest {
     @Test
-    fun getKotlinTitles() {
+    fun testLookaheadAndClosing() {
         val model = RepoModel()
         runBlocking {
-            val chan = model.getRepos()
-            Timber.d("Trying receive")
+            val buffer = 10  // This should stay less than the # of repos Github returns
+            val chan = model.getRepos(lookAhead = buffer)
             val first = chan.receiveOrNull()
-            Timber.d("Receive completed")
             assertNotNull(first)
+
+            delay(1000) // Ensure model has time to fill the channel
+            chan.close()
+            delay(1000)
+            assertNotNull(chan.receiveOrNull()) // We should still have elements in the channel after a close
+
+            // Note, the model was has a pending send that was blocked so this replaces the last receive
+            repeat(buffer) { chan.receiveOrNull() }  // Empty out the channel; Model should not keep writing to closed channel
+            assertNull(chan.receiveOrNull())
+        }
+    }
+
+    @Test
+    fun testKotlinMatches() {
+        val model = RepoModel()
+        runBlocking {
+            
         }
     }
 }

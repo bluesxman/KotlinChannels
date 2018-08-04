@@ -8,9 +8,8 @@ import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.launch
 import timber.log.Timber
 
-
 class RepoModel {
-    fun getRepos(namePattern: Regex = Regex(".*"), lookAhead: Int = LOOKAHEAD): Channel<Repository> {
+    fun getRepos(namePattern: Regex? = null, lookAhead: Int = LOOKAHEAD): Channel<Repository> {
         val repos = ArrayChannel<Repository>(lookAhead)
 
         launch {
@@ -20,12 +19,11 @@ class RepoModel {
             while (!repos.isClosedForSend) {
                 if (result is Result.Success) {
                     for (r in result.value) {
-                        if (namePattern.matches(r.name)) {
-                            Timber.d("sending")
-                            repos.send(r)
-                        } else {
-                            Timber.d("no match")
-                        }
+                        namePattern?.apply {
+                            if (matches(r.name)) {
+                                repos.send(r)
+                            }
+                        } ?: repos.send(r)
                     }
                     val lastRepoId = result.value.last().id
                     result = Fuel.get("$URL?since=$lastRepoId").awaitObjectResult(deserializer)
