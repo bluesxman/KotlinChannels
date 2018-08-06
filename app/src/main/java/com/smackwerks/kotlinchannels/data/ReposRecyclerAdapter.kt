@@ -8,6 +8,7 @@ import com.smackwerks.kotlinchannels.R
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.launch
+import timber.log.Timber
 
 class ReposRecyclerAdapter(
     private val reposChan: Channel<Repository>,
@@ -30,13 +31,15 @@ class ReposRecyclerAdapter(
         } else {
             launch(UI) {
                 while (reposCache.size <= position) {
-                    if (reposChan.isEmpty) {
-                        onWait()
-                        reposCache.add(reposChan.receive())
-                        onReady()
-                    } else {
-                        reposCache.add(reposChan.receive())
-                    }
+                    val notReady = reposChan.isEmpty
+                    if (notReady) onWait()
+                    reposChan.receiveOrNull()
+                        ?.let { reposCache.add(it) }
+                        ?: run {
+                            Timber.e("Repo channel closed unexpectedly.")
+                            return@launch
+                        }
+                    if (notReady) onReady()
                 }
                 holder.display(reposCache[position])
             }
