@@ -20,15 +20,18 @@ object RepoModel {
             var result = Fuel.get(URL).awaitObjectResult(deserializer)
 
             while (!repos.isClosedForSend) {
-                if (result is Result.Success) {
-                    result.value
-                        .filter { namePattern?.matches(it.name) ?: true }
-                        .forEach { repos.send(it) }
-                    val lastRepoId = result.value.last().id
-                    result = Fuel.get("$URL?since=$lastRepoId").awaitObjectResult(deserializer)
-                } else {
-                    Timber.e("Request failed, closing channel: $result")
-                    repos.close()
+                when (result) {
+                    is Result.Success -> {
+                        result.value
+                            .filter { namePattern?.matches(it.name) ?: true }
+                            .forEach { repos.send(it) }
+                        val lastRepoId = result.value.last().id
+                        result = Fuel.get("$URL?since=$lastRepoId").awaitObjectResult(deserializer)
+                    }
+                    is Result.Failure -> {
+                        Timber.e("Request failed, closing channel: ${result.error}")
+                        repos.close()
+                    }
                 }
             }
         }
