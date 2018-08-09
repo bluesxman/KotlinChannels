@@ -8,9 +8,11 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import com.smackwerks.kotlinchannels.data.RepoModel
-import com.smackwerks.kotlinchannels.data.ReposRecyclerAdapter
+import com.smackwerks.kotlinchannels.data.StockModel
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
+import kotlinx.coroutines.experimental.android.UI
+import kotlinx.coroutines.experimental.launch
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,6 +25,7 @@ class MainActivity : AppCompatActivity() {
                 .setAction("Action", null).show()
         }
 
+        setupTicker()
         setupRepos()
     }
 
@@ -46,6 +49,18 @@ class MainActivity : AppCompatActivity() {
                 { main_progress_bar.visibility = View.VISIBLE },
                 { main_progress_bar.visibility = View.GONE }
             )
+        }
+    }
+
+    private fun setupTicker() {
+        launch(UI) {
+            val chan = StockModel.getStockPrice("GOOGL")
+
+            while (!chan.isClosedForReceive) {
+                chan.receiveOrNull()?.apply {
+                    stock_ticker.text = "${symbol}: $${price}"
+                }
+            }
         }
     }
 }
