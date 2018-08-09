@@ -12,7 +12,7 @@ import kotlinx.coroutines.experimental.launch
 import timber.log.Timber
 
 object StockModel {
-    private const val INTERVAL = 1000
+    private const val INTERVAL = 2000
 
     fun getStockPrice(symbol: String): Channel<Stock> {
         val chan = ConflatedChannel<Stock>()
@@ -32,6 +32,7 @@ object StockModel {
         val result = Fuel.get(url).awaitObjectResult(moshiDeserializerOf<IexStockPriceResponse>())
         return when (result) {
             is Result.Success -> with(result.value) {
+                Timber.d("Got price")
                 Stock(companyName, symbol, iexRealtimePrice)
             }
             is Result.Failure -> run {
