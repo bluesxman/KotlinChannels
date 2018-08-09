@@ -21,13 +21,9 @@ object RepoModel {
 
             while (!repos.isClosedForSend) {
                 if (result is Result.Success) {
-                    for (r in result.value) {
-                        namePattern?.apply {
-                            if (matches(r.name)) {
-                                repos.send(r)
-                            }
-                        } ?: repos.send(r)
-                    }
+                    result.value
+                        .filter { namePattern?.matches(it.name) ?: true }
+                        .forEach { repos.send(it) }
                     val lastRepoId = result.value.last().id
                     result = Fuel.get("$URL?since=$lastRepoId").awaitObjectResult(deserializer)
                 } else {
