@@ -68,7 +68,7 @@ data class IexStockPriceResponse(
     @Json(name = "latestVolume")
     val latestVolume: Int = 0,
     @Json(name = "iexAskPrice")
-    val iexAskPrice: Int = 0,
+    val iexAskPrice: Double = 0.0,
     @Json(name = "ytdChange")
     val ytdChange: Double = 0.0,
     @Json(name = "iexVolume")
