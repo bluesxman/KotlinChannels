@@ -33,7 +33,7 @@ object StockModel {
         return when (result) {
             is Result.Success -> with(result.value) {
                 Timber.d("Got price")
-                Stock(companyName, symbol, iexRealtimePrice)
+                Stock(companyName, symbol, iexRealtimePrice, latestTime)
             }
             is Result.Failure -> run {
                 Timber.e(result.toString())
@@ -46,5 +46,6 @@ object StockModel {
 data class Stock(
     val company: String,
     val symbol: String,
-    val price: Double
+    val price: Double,
+    val time: String
 )
