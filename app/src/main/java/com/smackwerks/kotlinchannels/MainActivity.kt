@@ -80,12 +80,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupTicker() {
         stockChan = StockModel.getStockPrice("GOOGL")
-        launch(UI) {
+        launch {
             var count = 0
             while (!stockChan.isClosedForReceive) {
                 count++
                 stockChan.receiveOrNull()?.apply {
-                    stock_ticker.text = "$symbol: $$price @ $time [$count]"
+                    launch (UI) {
+                        stock_ticker.text = "$symbol: $$price @ $time [$count]"
+                    }
                 }
             }
         }

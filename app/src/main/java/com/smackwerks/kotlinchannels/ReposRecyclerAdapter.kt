@@ -37,6 +37,7 @@ class ReposRecyclerAdapter(
                         ?.let { reposCache.add(it) }
                         ?: run {
                             Timber.e("Repo channel closed unexpectedly.")
+                            if (notReady) onReady()
                             return@launch
                         }
                     if (notReady) onReady()
